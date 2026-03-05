@@ -1,0 +1,116 @@
+.main {
+  padding: 1rem 0 4rem;
+}
+
+.hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 3rem;
+  position: relative;
+}
+
+.heroText { max-width: 600px; }
+
+.headline {
+  font-size: clamp(3rem, 7vw, 5.5rem);
+  line-height: 0.95;
+  color: var(--amber-light);
+  letter-spacing: -0.02em;
+}
+
+.headline2 {
+  font-size: clamp(3rem, 7vw, 5.5rem);
+  line-height: 0.95;
+  color: var(--cream);
+  letter-spacing: -0.02em;
+  margin-bottom: 1.5rem;
+}
+
+.sub {
+  font-size: 1.2rem;
+  color: rgba(245, 237, 214, 0.65);
+  line-height: 1.6;
+  font-style: italic;
+}
+
+.foamDecor {
+  font-size: 8rem;
+  opacity: 0.15;
+  position: absolute;
+  right: -1rem;
+  top: -1rem;
+  pointer-events: none;
+  filter: blur(1px);
+}
+
+.formCard {
+  max-width: 560px;
+  animation: fadeUp 0.5s ease forwards;
+}
+
+.chalkLabel {
+  font-family: 'Crimson Pro', serif;
+  font-style: italic;
+  text-align: center;
+  color: rgba(201, 123, 42, 0.6);
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+  margin-bottom: 1.5rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.label {
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.9rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--amber-light);
+  opacity: 0.8;
+}
+
+.select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23C97B2A' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 2.5rem;
+  cursor: pointer;
+}
+
+.select option {
+  background-color: var(--mahogany-mid);
+  color: var(--cream);
+}
+
+.error {
+  margin-top: 1rem;
+  color: #e07070;
+  font-style: italic;
+  font-size: 0.95rem;
+}
+
+.stores {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2.5rem;
+}
+
+.storesSep {
+  color: var(--amber);
+  opacity: 0.4;
+  font-size: 0.7rem;
+}

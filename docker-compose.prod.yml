@@ -1,0 +1,53 @@
+services:
+  db:
+    image: postgres:17.9-bookworm
+    env_file: .env
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./certs/WM_IO_private_key.pem:/app/WM_IO_private_key.pem:ro
+      - static_volume:/app/staticfiles
+    env_file: .env
+    command: >
+      bash -c "python manage.py migrate &&
+               python manage.py collectstatic --noinput &&
+               gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - WALMART_PRIVATE_KEY_PATH=/app/WM_IO_private_key.pem
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  nginx:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    ports:
+      - "80:80"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - static_volume:/app/staticfiles:ro
+    depends_on:
+      - web
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  static_volume:

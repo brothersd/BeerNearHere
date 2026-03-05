@@ -1,0 +1,116 @@
+.main {
+  padding: 1rem 0 4rem;
+}
+
+.title {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  color: var(--cream);
+}
+
+.subtitle {
+  font-family: 'Crimson Pro', serif;
+  font-style: italic;
+  color: rgba(245, 237, 214, 0.5);
+  margin-top: 0.3rem;
+  font-size: 1.05rem;
+}
+
+.filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+.filters .input { max-width: 280px; }
+
+.group { margin-bottom: 2.5rem; }
+
+.groupHeader {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.groupCount {
+  font-family: 'Crimson Pro', serif;
+  font-style: italic;
+  font-size: 0.9rem;
+  color: rgba(245, 237, 214, 0.4);
+}
+
+.table {
+  background: linear-gradient(135deg, var(--mahogany-mid), var(--stout));
+  border: 1px solid rgba(201, 123, 42, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.tableHeader {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr 0.8fr 0.8fr;
+  padding: 0.6rem 1.25rem;
+  background: rgba(201, 123, 42, 0.08);
+  border-bottom: 1px solid rgba(201, 123, 42, 0.2);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--amber);
+  opacity: 0.8;
+}
+
+.tableRow {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr 0.8fr 0.8fr;
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid rgba(201, 123, 42, 0.08);
+  align-items: center;
+  transition: background 0.15s;
+  opacity: 0;
+}
+.tableRow:last-child { border-bottom: none; }
+.tableRow:hover { background: rgba(201, 123, 42, 0.05); }
+
+.productName {
+  font-family: 'Crimson Pro', serif;
+  font-size: 1rem;
+  color: var(--cream);
+}
+.productName a {
+  color: var(--cream);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.productName a:hover { color: var(--amber-light); }
+
+.storeName {
+  font-size: 0.9rem;
+  color: rgba(245, 237, 214, 0.6);
+  font-style: italic;
+}
+
+.price {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  color: var(--amber-light);
+  font-size: 1.05rem;
+}
+
+.date {
+  font-size: 0.85rem;
+  color: rgba(245, 237, 214, 0.35);
+}
+
+.error {
+  color: #e07070;
+  font-style: italic;
+  margin-top: 1rem;
+}
+
+.empty {
+  text-align: center;
+  padding: 3rem;
+  color: rgba(245, 237, 214, 0.5);
+  font-style: italic;
+  font-size: 1.1rem;
+}

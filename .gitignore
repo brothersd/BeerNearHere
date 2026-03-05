@@ -81,6 +81,7 @@ coverage/
 *.cover
 .hypothesis/
 store_cache.json
+TODO_List.md
 
 # Type checking
 .mypy_cache/

@@ -23,6 +23,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Create a non-root user for security
 RUN useradd --create-home --shell /bin/bash appuser
+RUN mkdir -p /app/staticfiles && chown -R appuser:appuser /app/staticfiles
 
 # Copy application code to docker
 COPY . .

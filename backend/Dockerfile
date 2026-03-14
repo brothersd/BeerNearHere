@@ -1,6 +1,9 @@
 # Backend Dockerfile
 #https://hub.docker.com/_/python
-FROM python:3.13-slim-bookworm
+# 42.18 MB Size
+#FROM python:3.13.12-slim-bookworm
+# 17.23 MB Size
+FROM python:3.13.12-alpine3.23
 
 ## ROOT USER: Install system dependencies
 #RUN apt-get update && \

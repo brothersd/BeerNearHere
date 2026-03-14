@@ -1,6 +1,6 @@
 ## Frontend Dockerfile
 # FROM node:24.14.0-bookworm-slim
-# 53.63MB
+# 53.63MB Size
 FROM node:24.14.0-alpine3.23
 
 WORKDIR /app

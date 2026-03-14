@@ -27,7 +27,7 @@ echo "[*] Installing Python dependencies..."
 pip install --upgrade pip
 
 # Check if requirements.txt exists before installing
-if [ -f "requirements.txt" ]; then
+if [ -f "backend/requirements.txt" ]; then
     pip install -r backend/requirements.txt
 else
     echo "[!] No requirements.txt found. Installing pytest for stretch goal..."
@@ -36,5 +36,5 @@ fi
 
 echo "------------------------------------------------"
 echo "[SUCCESS] "
-echo "To start, run: source venv/bin/activate && python main.py"
+echo "To start, run: source venv/bin/activate"
 echo "------------------------------------------------"

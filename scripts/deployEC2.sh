@@ -17,4 +17,4 @@ docker image prune -f
 docker builder prune -f
 
 echo "✅ Deployment complete!"
-echo "🌐 App: http://your-ec2-public-ip:8000"
+echo "🌐 App: http://192.168.2.108:8000"

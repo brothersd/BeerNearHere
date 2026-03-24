@@ -6,9 +6,10 @@ WORKDIR /app
 # Copy package files first for better caching
 COPY package*.json ./
 
-RUN npm install --omit=dev && \
+RUN npm install && \
     # Verify installation succeeded
     node -e "require('react')"
+
 
 
 # Copy source code

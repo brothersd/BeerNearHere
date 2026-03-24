@@ -31,16 +31,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 # Install runtime dependencies only (no build tools)
-RUN apk add --no-cache \
-    # Required for psycopg2-binary and cryptography
-    gcc \
-    musl-dev \
-    python3-dev \
-    libffi-dev \
-    openssl-dev \
-    postgresql-libs \
-    # For gunicorn
-    ca-certificates
+RUN apk add --no-cache bash gcc musl-dev python3-dev libffi-dev openssl-dev postgresql-libs ca-certificates
 
 # Create a non-root user for security (alpine uses adduser)
 RUN addgroup -S appgroup && \

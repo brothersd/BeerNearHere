@@ -24,9 +24,9 @@ services:
       - static_volume:/app/staticfiles
     env_file: .env
     command: >
-      bash -c "python manage.py migrate &&
-               python manage.py collectstatic --noinput &&
-               gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120"
+      sh -c "python manage.py migrate && \
+             python manage.py collectstatic --noinput && \
+             gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120"
     environment:
       - PYTHONUNBUFFERED=1
       - WALMART_PRIVATE_KEY_PATH=/app/WM_IO_private_key.pem

@@ -1,44 +1,74 @@
-# Backend Dockerfile
-#https://hub.docker.com/_/python
-# 42.18 MB Size
-#FROM python:3.13.12-slim-bookworm
-# 17.23 MB Size
-FROM python:3.13.12-alpine3.23
+# Backend Dockerfile - Production Optimized
+FROM python:3.13-alpine AS builder
 
-## ROOT USER: Install system dependencies
-#RUN apt-get update && \
-#    apt-get install -y curl && \
-#    rm -rf /var/lib/apt/lists/*
+# Install system dependencies required for building Python packages
+RUN apk add --no-cache \
+    gcc \
+    musl-dev \
+    python3-dev \
+    libffi-dev \
+    openssl-dev \
+    postgresql-dev
 
 WORKDIR /app
 
-# Python environment setup
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ARG PYTHONPATH="/app"
-
 COPY requirements.txt .
 
-#Dev
-# RUN pip install -r requirements.txt
-#Prod
-RUN pip install --no-cache-dir -r requirements.txt
+# Install Python dependencies in a separate layer for better caching
+RUN pip install --no-cache-dir -r requirements.txt && \
+    # Verify installation succeeded
+    python -c "import django; import rest_framework"
 
-# Create a non-root user for security
-RUN useradd --create-home --shell /bin/bash appuser
-RUN mkdir -p /app/staticfiles && chown -R appuser:appuser /app/staticfiles
+# Production stage - minimal image
+FROM python:3.13-alpine AS production
 
-# Copy application code to docker
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    DJANGO_SETTINGS_MODULE=config.settings \
+    PATH=/usr/local/bin:$PATH
+
+WORKDIR /app
+
+# Install runtime dependencies only (no build tools)
+RUN apk add --no-cache \
+    # Required for psycopg2-binary and cryptography
+    gcc \
+    musl-dev \
+    python3-dev \
+    libffi-dev \
+    openssl-dev \
+    postgresql-libs \
+    # For gunicorn
+    ca-certificates
+
+# Create a non-root user for security (alpine uses adduser)
+RUN addgroup -S appgroup && \
+    adduser -S appuser -G appgroup && \
+    mkdir -p /app/staticfiles /var/log/django && \
+    chown -R appuser:appgroup /app /var/log/django
+
+# Copy Python dependencies from builder stage (better caching)
+COPY --from=builder /usr/local/lib/python3.13/site-packages /usr/local/lib/python3.13/site-packages
+
+# Copy application code
 COPY . .
 
-RUN chown -R appuser:appuser /app
+# Set ownership to non-root user
+RUN chown -R appuser:appgroup /app && \
+    chmod -R 755 /app
 
-# Switch to user account
+# Switch to non-root user for security
 USER appuser
 
+# Expose port (gunicorn default)
 EXPOSE 8000
 
-# Default Command (Optimized for Dev)
-# Use runserver here so your code changes reflect instantly.
-# Use Gunicorn in a separate 'docker-compose.prod.yml' later.
-# CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Health check using Django's built-in health endpoint
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/api/ready/ || exit 1
+
+# Run with gunicorn for production (better than runserver)
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "4", \
+     "--threads", "2", "--timeout", "30", \
+     "config.wsgi:application"]

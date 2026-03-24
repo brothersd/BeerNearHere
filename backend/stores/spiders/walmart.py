@@ -21,22 +21,33 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# --- LOAD CREDENTIALS FROM ENV ---
-CONSUMER_ID = os.getenv("WALMART_CONSUMER_ID")
-PRIVATE_KEY_PATH = os.getenv("WALMART_PRIVATE_KEY_PATH", "./WM_IO_private_key.pem")
-KEY_VERSION = os.getenv("WALMART_KEY_VERSION", "1")
-
-# Validate credentials before proceeding
-if not CONSUMER_ID:
-    raise ValueError("❌ WALMART_CONSUMER_ID not found in .env file")
-if not Path(PRIVATE_KEY_PATH).exists():
-    raise FileNotFoundError(f"❌ Private key not found: {PRIVATE_KEY_PATH}")
-
-logger.info("✅ Credentials loaded successfully")
-
 # --- CACHE CONFIGURATION ---
 CACHE_FILE = Path("./store_cache.json")
 CACHE_TTL_SECONDS = 86400  # 24 hours
+
+
+def load_walmart_credentials() -> tuple[str, str, str]:
+    """
+    Lazily loads and validates Walmart API credentials.
+    
+    Returns:
+        Tuple of (CONSUMER_ID, PRIVATE_KEY_PATH, KEY_VERSION)
+        
+    Raises:
+        ValueError: If WALMART_CONSUMER_ID is not set in environment
+        FileNotFoundError: If private key file does not exist
+    """
+    consumer_id = os.getenv("WALMART_CONSUMER_ID")
+    private_key_path = os.getenv("WALMART_PRIVATE_KEY_PATH", "./WM_IO_private_key.pem")
+    key_version = os.getenv("WALMART_KEY_VERSION", "1")
+    
+    if not consumer_id:
+        raise ValueError("❌ WALMART_CONSUMER_ID not found in .env file")
+    if not Path(private_key_path).exists():
+        raise FileNotFoundError(f"❌ Private key not found: {private_key_path}")
+    
+    logger.info("✅ Walmart credentials loaded successfully")
+    return consumer_id, private_key_path, key_version
 
 
 def generate_signature(consumer_id: str, timestamp: str, key_version: str, private_key_path: str) -> str:
@@ -88,6 +99,9 @@ def get_store_id_by_zip(zip_code: str, max_stores: int = 1) -> list[dict]:
     """
     if not zip_code or len(zip_code) != 5 or not zip_code.isdigit():
         raise ValueError("Zip code must be a 5-digit string")
+    
+    # Load credentials lazily on first use
+    CONSUMER_ID, PRIVATE_KEY_PATH, KEY_VERSION = load_walmart_credentials()
     
     timestamp = str(int(time.time() * 1000))
     signature = generate_signature(CONSUMER_ID, timestamp, KEY_VERSION, PRIVATE_KEY_PATH)
@@ -169,6 +183,9 @@ def search_products(query: str, limit: int = 5, zip_code: Optional[str] = None) 
     store_id = None
     if zip_code:
         store_id = get_nearest_store_id(zip_code)
+    
+    # Load credentials lazily on first use
+    CONSUMER_ID, PRIVATE_KEY_PATH, KEY_VERSION = load_walmart_credentials()
     
     timestamp = str(int(time.time() * 1000))
     signature = generate_signature(CONSUMER_ID, timestamp, KEY_VERSION, PRIVATE_KEY_PATH)

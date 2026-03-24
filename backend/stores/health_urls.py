@@ -1,0 +1,8 @@
+# Health check URLs for Docker/Kubernetes probes
+from django.urls import path, include
+from .views import health_check, ready_check, live_check
+
+urlpatterns = [
+    path('ready/', ready_check, name='readiness-check'),
+    path('live/', live_check, name='liveness-check'),
+]

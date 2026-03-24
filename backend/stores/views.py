@@ -1,7 +1,8 @@
 # backend/stores/views.py
+import time
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, exceptions
 from rest_framework.decorators import api_view
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from stores.models import StoreProduct
@@ -16,6 +17,118 @@ logger = logging.getLogger(__name__)
 
 PRODUCT_TTL_DAYS = 30
 MAX_RESULTS_PER_STORE = 20
+
+
+@api_view(['GET'])
+@api_view(['HEAD'])
+def health_check(request):
+    """
+    Health check endpoint for Docker/Kubernetes readiness probes.
+    
+    GET /health/ - Returns detailed health status with component checks
+    HEAD /health/ - Returns only headers (for liveness probe)
+    """
+    # Check database connectivity
+    db_healthy = False
+    try:
+        StoreProduct.objects.count()  # Simple query to test DB connection
+        db_healthy = True
+    except Exception as e:
+        logger.error(f"Database health check failed: {e}")
+    
+    # Check application components
+    components_status = {
+        "api": "healthy",
+        "database": "healthy" if db_healthy else "unhealthy",
+        "walmart_api": "unknown",  # Requires credentials to test
+        "kroger_api": "unknown",   # Requires credentials to test
+    }
+    
+    # Try Walmart API health check (if credentials available)
+    try:
+        from stores.spiders.walmart import load_walmart_credentials
+        CONSUMER_ID, PRIVATE_KEY_PATH, KEY_VERSION = load_walmart_credentials()
+        components_status["walmart_api"] = "healthy"
+    except ValueError as e:
+        logger.warning(f"Walmart credentials not configured (expected in dev): {e}")
+        components_status["walmart_api"] = "not_configured"
+    except Exception as e:
+        logger.error(f"Walmart API health check failed: {e}")
+        components_status["walmart_api"] = "unhealthy"
+    
+    # Try Kroger API health check (if credentials available)
+    try:
+        from utils.OAuth2 import get_token
+        token = get_token()
+        if token:
+            components_status["kroger_api"] = "healthy"
+        else:
+            logger.warning("Kroger token fetch failed")
+            components_status["kroger_api"] = "unhealthy"
+    except ValueError as e:
+        logger.warning(f"Kroger credentials not configured (expected in dev): {e}")
+        components_status["kroger_api"] = "not_configured"
+    except Exception as e:
+        logger.error(f"Kroger API health check failed: {e}")
+        components_status["kroger_api"] = "unhealthy"
+    
+    overall_healthy = all(
+        status == "healthy"
+        for status in components_status.values()
+        if status != "not_configured"
+    )
+    
+    response_data = {
+        "status": "healthy" if overall_healthy else "unhealthy",
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", timezone.now().timetuple()),
+        "components": components_status,
+    }
+    
+    # HEAD request returns only headers
+    if request.method == 'HEAD':
+        return Response(status=status.HTTP_200_OK)
+    
+    return Response(response_data, status=status.HTTP_200_OK if overall_healthy else status.HTTP_503_SERVICE_UNAVAILABLE)
+
+
+@api_view(['GET'])
+def ready_check(request):
+    """
+    Readiness check - verifies application is ready to accept traffic.
+    Used by Kubernetes liveness/readiness probes.
+    """
+    # Check database connectivity
+    try:
+        StoreProduct.objects.count()
+    except Exception as e:
+        logger.error(f"Database not available for readiness check: {e}")
+        return Response(
+            {"status": "not_ready", "reason": "database_unavailable"},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE
+        )
+    
+    # Check that we can perform a basic query with ordering (used in search)
+    try:
+        StoreProduct.objects.order_by('price').count()
+    except Exception as e:
+        logger.error(f"Database query failed for readiness check: {e}")
+        return Response(
+            {"status": "not_ready", "reason": "database_query_failed"},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE
+        )
+    
+    return Response({"status": "ready"})
+
+
+@api_view(['GET'])
+def live_check(request):
+    """
+    Liveness check - verifies application process is alive.
+    Used by Kubernetes liveness probes (restart container if unhealthy).
+    Always returns healthy unless there's a critical error.
+    """
+    return Response({"status": "alive"})
+
 
 PACK_SIZE_KEYWORDS = {
     'single':   ['single', ' 1 ct', ' 1 can', ' 1 bottle', '16 oz', '40 oz', '12 oz', '24 fl oz', '25 fl oz'],
@@ -82,6 +195,14 @@ def filter_by_pack_size(queryset, pack_size: str):
 class ProductSearchView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @api_view(['GET'])
+    def get_health_status(self, request):
+        """Return health status for this view."""
+        return Response({
+            "status": "healthy",
+            "message": "Product search service is operational"
+        })
+
     def get(self, request):
         return Response({
             'message': 'Send POST to /api/search/ with zip_code, product_name, and optional pack_size',
@@ -128,11 +249,69 @@ class ProductSearchView(APIView):
                 "results": serializer.data
             }, status=status.HTTP_200_OK)
 
-        except Exception as e:
-            logger.error(f"Search failed: {str(e)}")
+        except ValueError as e:
+            logger.warning(f"Invalid input for search: {e}")
             return Response(
-                {"error": "An error occurred during the search."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                {"error": "Invalid request parameters. Please check your zip code and product name."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            # Log full error for debugging, but send user-friendly message to client
+            logger.error(f"Search failed: {type(e).__name__}: {str(e)}", exc_info=True)
+            
+            # Check if this is a database/connection issue (transient error)
+            db_error_types = [
+                'DatabaseError',
+                'OperationalError',
+                'ConnectionError',
+                'Timeout'
+            ]
+            error_type_name = type(e).__name__
+            
+            if any(err in error_type_name for err in db_error_types):
+                # Retry transient database errors with exponential backoff
+                logger.info(f"Transient DB error, will retry: {error_type_name}")
+                max_retries = 3
+                base_delay = 1.0
+                
+                for attempt in range(max_retries):
+                    try:
+                        cutoff = timezone.now() - timedelta(days=PRODUCT_TTL_DAYS)
+                        deleted_count, _ = StoreProduct.objects.filter(created_at__lt=cutoff).delete()
+                        if deleted_count:
+                            logger.info(f"Purged {deleted_count} products older than {PRODUCT_TTL_DAYS} days")
+                        
+                        kroger_count = sync_kroger_products(zip_code, product_name, limit=MAX_RESULTS_PER_STORE)
+                        logger.info(f"Kroger sync saved {kroger_count} products for '{product_name}' in {zip_code}")
+                        
+                        walmart_count = sync_walmart_products(zip_code, product_name, search_term)
+                        logger.info(f"Walmart sync saved {walmart_count} products for '{product_name}' in {zip_code}")
+                        
+                        products = StoreProduct.objects.filter(
+                            name__icontains=product_name,
+                            zip_code=zip_code
+                        )
+                        products = filter_by_pack_size(products, pack_size)
+                        products = products.order_by('price')
+                        
+                        serializer = StoreSerializer(products, many=True)
+                        
+                        return Response({
+                            "count": len(serializer.data),
+                            "pack_size": pack_size or None,
+                            "results": serializer.data
+                        }, status=status.HTTP_200_OK)
+                    except Exception as retry_error:
+                        if attempt < max_retries - 1:
+                            delay = base_delay * (2 ** attempt)
+                            logger.info(f"Retrying in {delay}s... (attempt {attempt + 1}/{max_retries})")
+                            time.sleep(delay)
+                        else:
+                            raise
+                
+            return Response(
+                {"error": "An error occurred during the search. Please try again later."},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE
             )
 
 

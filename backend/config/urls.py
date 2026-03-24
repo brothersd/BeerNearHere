@@ -8,4 +8,7 @@ urlpatterns = [
     path('api/', include('stores.urls')),
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    
+    # Health check endpoints for Docker/Kubernetes probes
+    path('health/', include('stores.health_urls', namespace='health')),
 ]

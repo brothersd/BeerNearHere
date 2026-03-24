@@ -42,9 +42,8 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./frontend/nginx.conf:/nginx.conf:ro
-
       - static_volume:/app/staticfiles:ro
+
     depends_on:
       - web
     restart: unless-stopped

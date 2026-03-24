@@ -28,10 +28,9 @@ RUN apk add --no-cache curl ca-certificates
 
 # Copy built React app from builder stage
 COPY --from=builder /app/dist /usr/share/nginx/html
+# Copy nginx config from build context
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Remove default nginx config and use custom one from host
-RUN rm -f /etc/nginx/conf.d/default.conf && \
-    cp /nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose port 80 (standard HTTP)
 EXPOSE 80

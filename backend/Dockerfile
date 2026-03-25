@@ -14,10 +14,8 @@ WORKDIR /app
 
 COPY requirements.txt .
 
-# Install Python dependencies in a separate layer for better caching
-RUN pip install --no-cache-dir -r requirements.txt && \
-    # Verify installation succeeded
-    python -c "import django; import rest_framework"
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Production stage - minimal image
 FROM python:3.13-alpine AS production
@@ -30,17 +28,18 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# Install runtime dependencies only (no build tools)
-RUN apk add --no-cache bash gcc musl-dev python3-dev libffi-dev openssl-dev postgresql-libs ca-certificates
+# Install runtime dependencies (including curl for health checks)
+RUN apk add --no-cache bash postgresql-libs ca-certificates curl
 
-# Create a non-root user for security (alpine uses adduser)
+# Create a non-root user for security
 RUN addgroup -S appgroup && \
     adduser -S appuser -G appgroup && \
     mkdir -p /app/staticfiles /var/log/django && \
     chown -R appuser:appgroup /app /var/log/django
 
-# Copy Python dependencies from builder stage (better caching)
+# Copy Python dependencies AND binaries from builder stage
 COPY --from=builder /usr/local/lib/python3.13/site-packages /usr/local/lib/python3.13/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Copy application code
 COPY . .
@@ -52,14 +51,14 @@ RUN chown -R appuser:appgroup /app && \
 # Switch to non-root user for security
 USER appuser
 
-# Expose port (gunicorn default)
+# Expose port
 EXPOSE 8000
 
 # Health check using Django's built-in health endpoint
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/api/ready/ || exit 1
 
-# Run with gunicorn for production (better than runserver)
+# Run with gunicorn
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "4", \
      "--threads", "2", "--timeout", "30", \
      "config.wsgi:application"]

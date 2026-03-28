@@ -25,14 +25,14 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     volumes:
-      - ./certs/WM_IO_private_key.pem:/app/WM_IO_private_key.pem:ro
+      - ./certs/WM_IO_private_key.pem:/app/WM_IO_private_key.pem
       - static_volume:/app/staticfiles
     env_file: .env
 
     command: >
       sh -c "python manage.py migrate && \
-            python manage.py collectstatic --noinput && \
-            python -m gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120"
+             python manage.py collectstatic --noinput && \
+             python -m gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120"
 
     environment:
       - PYTHONUNBUFFERED=1

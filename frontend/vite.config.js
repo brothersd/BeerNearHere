@@ -13,7 +13,7 @@ export default defineConfig({
     // Proxy API requests to Django backend
     proxy: {
       '/api': {
-        target: 'http://web:8000',  // Docker service name, not localhost
+        target: process.env.VITE_API_URL || 'http://localhost:8000/api',
         changeOrigin: true,
         secure: false,
       },

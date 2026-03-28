@@ -42,17 +42,24 @@ class RegisterView(APIView):
                 status=status.HTTP_409_CONFLICT
             )
 
-        user = User.objects.create_user(username=username, password=password)
-        refresh = RefreshToken.for_user(user)
+        try:
+            user = User.objects.create_user(username=username, password=password)
+            refresh = RefreshToken.for_user(user)
 
-        logger.info(f"New user registered: {username}")
+            logger.info(f"New user registered: {username}")
 
-        return Response({
-            "message": "Account created successfully.",
-            "username": user.username,
-            "access": str(refresh.access_token),
-            "refresh": str(refresh),
-        }, status=status.HTTP_201_CREATED)
+            return Response({
+                "message": "Account created successfully.",
+                "username": user.username,
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
+            }, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            logger.error(f"Registration failed for {username}: {str(e)}")
+            return Response(
+                {"error": "Registration failed. Please try again."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class LoginView(APIView):

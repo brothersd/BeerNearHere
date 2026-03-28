@@ -53,7 +53,7 @@ export default function SearchPage() {
       </div>
 
       <div className={`card ${styles.formCard}`}>
-        <div className={styles.chalkLabel}>— Place Your Order —</div>
+        <div className={styles.chalkLabel}>Search For Beer Near Here</div>
         <form onSubmit={handleSearch} className={styles.form}>
           <div className={styles.field}>
             <label className={styles.label}>Zip Code</label>

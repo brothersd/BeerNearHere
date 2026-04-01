@@ -7,14 +7,16 @@ echo "🚀 Deploying to EC2..."
 git pull origin main
 
 # Build only what changed (faster, preserves data)
-docker compose build --no-cache web react
+docker compose -f docker-compose.prod.yml up -d --build
+
+docker compose -f docker-compose.prod.yml ps
 
 # Restart services (KEEP volumes/database)
-docker compose up -d --remove-orphans
+docker compose -f docker-compose.prod.yml up -d --remove-orphans
 
 # Clean only dangling resources (safe)
 docker image prune -f
 docker builder prune -f
 
 echo "✅ Deployment complete!"
-echo "🌐 App: http://192.168.2.108:8000"
+echo "🌐 App: http://18.218.53.191:8000"

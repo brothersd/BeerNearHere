@@ -19,4 +19,4 @@ docker image prune -f
 docker builder prune -f
 
 echo "✅ Deployment complete!"
-echo "🌐 App: http://18.218.53.191:8000"
+echo "🌐 App: http://18.216.65.155:8000"

@@ -7,12 +7,12 @@ echo "🚀 Deploying to EC2..."
 git pull origin main
 
 # Build only what changed (faster, preserves data)
-docker compose -f docker-compose.prod.yml up -d --build
+docker compose up -d --build
 
-docker compose -f docker-compose.prod.yml ps
+docker compose ps
 
 # Restart services (KEEP volumes/database)
-docker compose -f docker-compose.prod.yml up -d --remove-orphans
+docker compose up -d --remove-orphans
 
 # Clean only dangling resources (safe)
 docker image prune -f

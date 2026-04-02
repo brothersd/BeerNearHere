@@ -20,7 +20,7 @@ echo "================================================"
 echo "[BUILDING & STARTING SERVICES]"
 echo "================================================"
 
-docker compose -f docker-compose.prod.yml up --build -d
+docker compose up --build -d
 
 echo ""
 echo "================================================"
@@ -30,8 +30,8 @@ echo ""
 echo "Access your application at: http://localhost"
 echo ""
 echo "To view logs:"
-echo "  docker compose -f docker-compose.prod.yml logs -f"
+echo "  docker compose logs -f"
 echo ""
 echo "To stop the services:"
-echo "  docker compose -f docker-compose.prod.yml down"
+echo "  docker compose down"
 echo ""

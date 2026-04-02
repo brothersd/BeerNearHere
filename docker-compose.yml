@@ -50,7 +50,6 @@ services:
   nginx:
     build:
       context: ./frontend
-      dockerfile: Dockerfile.prod
     ports:
       - "80:80"
     volumes:

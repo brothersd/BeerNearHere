@@ -2,6 +2,7 @@
 from django.contrib import admin
 from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+from django.http import HttpResponse
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -10,5 +11,6 @@ urlpatterns = [
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     
     # Health check endpoints for Docker/Kubernetes probes
+    path('health-check/', lambda r: HttpResponse("OK")),
     path('health/', include('stores.health_urls', namespace='health')),
 ]

@@ -25,7 +25,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     volumes:
-      - ./certs/WM_IO_private_key.pem:/app/WM_IO_private_key.pem
+      - /certs/WM_IO_private_key.pem:/app/WM_IO_private_key.pem:ro
       - static_volume:/app/staticfiles
     env_file: .env
 

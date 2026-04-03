@@ -104,91 +104,16 @@ def sync_kroger_products(zip_code: str, product_name: str, banner: str = "kingso
         if product_name.lower() not in name.lower():
             continue
 
-        # Find the most specific matching item based on product name and exact size match
-        best_item = None
-        best_match_score = -1
-        
-        for item in items:
-            item_size = item.get('size', '')
-            item_name = item.get('description', '').lower()
-            
-            # Calculate match score (higher is better)
-            # Exact size match gets highest priority, then partial matches
-            if 'can' in item_size.lower():
-                # Check for exact single can match (no pack quantity mentioned)
-                if not any(x in item_size.lower() for x in ['pack', 'bottle', 'case']):
-                    best_item = item
-                    best_match_score = 100
-                    break
-        
-        if not best_item:
-            # Fall back to items with "can" anywhere in size, preferring smaller quantities
-            for item in items:
-                item_size = item.get('size', '')
-                if 'can' in item_size.lower():
-                    # Prefer single cans over multi-packs
-                    pack_qty_match = any(x in item_size.lower() for x in ['6-pack', '12-pack', '24-pack', 'case'])
-                    best_item = item
-                    break
-        
-        if not best_item:
-            best_item = items[0]
+        price_info = items[0].get('price', {})
+        regular = price_info.get('regular', 0)
+        promo = price_info.get('promo', 0)
+        final_price = promo if (promo and 0 < promo < regular) else regular
 
-        # Check multiple price fields to get the most accurate current price
-        # Kroger API returns prices in cents (integers), need to convert to dollars
-        
-        # Initialize all possible price sources
-        regular_cents = None
-        promo_cents = None
-        sale_price_cents = None
-        
-        # Priority 1: Check top-level salePrice field (most reliable for current pricing)
-        if isinstance(best_item, dict):
-            raw_sale = best_item.get('salePrice')
-            if raw_sale is not None and isinstance(raw_sale, (int, float)):
-                sale_price_cents = int(round(float(raw_sale)))
-        
-        # Priority 2: Check nested price object for promo/regular prices
-        price_info = best_item.get('price', {}) or {}
-        if isinstance(price_info, dict):
-            raw_regular = price_info.get('regular')
-            raw_promo = price_info.get('promo')
-            
-            if raw_regular is not None and isinstance(raw_regular, (int, float)):
-                regular_cents = int(round(float(raw_regular)))
-            
-            if raw_promo is not None and isinstance(raw_promo, (int, float)):
-                promo_cents = int(round(float(raw_promo)))
-        
-        # Priority 3: Check alternative field names at top level
-        if sale_price_cents is None:
-            raw_sale = best_item.get('salePrice') or best_item.get('currentPrice')
-            if raw_sale is not None and isinstance(raw_sale, (int, float)):
-                sale_price_cents = int(round(float(raw_sale)))
-        
-        if regular_cents is None:
-            regular_cents = int(best_item.get('regularPrice', 0)) or int(price_info.get('regular', 0)) or 0
-        
-        # Log the price fields found for debugging (useful for troubleshooting)
-        logger.debug(f"Kroger API prices: regular={regular_cents}, promo={promo_cents}, sale={sale_price_cents}")
-
-        # Use the lowest valid promotional/sale price, falling back to regular
-        if sale_price_cents is not None and 0 < sale_price_cents < (regular_cents or float('inf')):
-            final_price = sale_price_cents / 100.0
-        elif promo_cents is not None and 0 < promo_cents < (regular_cents or float('inf')):
-            final_price = promo_cents / 100.0
-        else:
-            # Use regular price as fallback
-            if regular_cents is not None and regular_cents > 0:
-                final_price = regular_cents / 100.0
-            else:
-                continue
-
-        if not final_price or final_price <= 0:
+        if not final_price:
             continue
 
         # Append size info (e.g. "24 cans / 12 fl oz") to name so pack size filtering works
-        size = best_item.get('size', '')
+        size = items[0].get('size', '')
         display_name = f"{name} - {size}" if size else name
 
         from urllib.parse import quote

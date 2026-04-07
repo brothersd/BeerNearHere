@@ -1,0 +1,146 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap');
+
+:root {
+  --amber: #C97B2A;
+  --amber-light: #E8A94A;
+  --amber-dark: #8B5010;
+  --cream: #F5EDD6;
+  --cream-dark: #E8D9B5;
+  --mahogany: #2A1506;
+  --mahogany-mid: #3D200A;
+  --foam: #FFF8E7;
+  --stout: #1A0D02;
+  --hops-green: #4A6741;
+  --chalk: #F0E8D0;
+  --shadow: rgba(26, 13, 2, 0.4);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Crimson Pro', Georgia, serif;
+  background-color: var(--mahogany);
+  color: var(--cream);
+  min-height: 100vh;
+  background-image:
+    radial-gradient(ellipse at 20% 0%, rgba(201, 123, 42, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(201, 123, 42, 0.1) 0%, transparent 50%),
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23C97B2A' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.app {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+h1, h2, h3 {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 900;
+}
+
+a { color: var(--amber-light); text-decoration: none; }
+a:hover { color: var(--cream); }
+
+/* Decorative divider */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.5rem 0;
+  color: var(--amber);
+  opacity: 0.6;
+}
+.divider::before, .divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--amber), transparent);
+}
+
+/* Card style */
+.card {
+  background: linear-gradient(135deg, var(--mahogany-mid), var(--stout));
+  border: 1px solid rgba(201, 123, 42, 0.25);
+  border-radius: 4px;
+  padding: 2rem;
+  box-shadow: 0 8px 32px var(--shadow), inset 0 1px 0 rgba(201, 123, 42, 0.15);
+}
+
+/* Button */
+.btn {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 0.85rem 2.5rem;
+  border: 2px solid var(--amber);
+  border-radius: 3px;
+  background: linear-gradient(135deg, var(--amber-dark), var(--amber));
+  color: var(--foam);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(201, 123, 42, 0.3);
+}
+.btn:hover {
+  background: linear-gradient(135deg, var(--amber), var(--amber-light));
+  box-shadow: 0 6px 20px rgba(201, 123, 42, 0.5);
+  transform: translateY(-1px);
+}
+.btn:active { transform: translateY(0); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+/* Input */
+.input {
+  font-family: 'Crimson Pro', serif;
+  font-size: 1.1rem;
+  background: rgba(26, 13, 2, 0.6);
+  border: 1px solid rgba(201, 123, 42, 0.4);
+  border-radius: 3px;
+  color: var(--cream);
+  padding: 0.75rem 1rem;
+  width: 100%;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+.input::placeholder { color: rgba(245, 237, 214, 0.4); }
+.input:focus {
+  border-color: var(--amber);
+  box-shadow: 0 0 0 3px rgba(201, 123, 42, 0.15);
+}
+
+/* Badge */
+.badge {
+  display: inline-block;
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.75rem;
+  border-radius: 2px;
+  background: rgba(201, 123, 42, 0.2);
+  border: 1px solid rgba(201, 123, 42, 0.4);
+  color: var(--amber-light);
+}
+
+/* Loading spinner */
+.spinner {
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 3px solid rgba(201, 123, 42, 0.2);
+  border-top-color: var(--amber);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 2rem auto;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Fade in */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp 0.4s ease forwards; }

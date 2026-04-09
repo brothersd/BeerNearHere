@@ -1,10 +1,12 @@
 #!/bin/bash
 
 # --- Configuration ---
-SOURCE="/home/na/Desktop/CodePlatoon/BeerNearHere/"
+# REMOVED trailing slash from SOURCE to ensure the directory is created
+SOURCE="/home/na/Desktop/CodePlatoon/BeerNearHere"
 DEST_USER="root"
 DEST_IP="192.168.2.108"
-DEST_PATH="/home/ubuntu/BeerNearHere"
+# Target the PARENT directory so that BeerNearHere is created inside /home/ubuntu/
+DEST_PATH="/home/ubuntu"
 
 # --- Script Logic ---
 
@@ -15,12 +17,11 @@ fi
 
 echo "Syncing as ROOT to $DEST_IP..."
 
-# -a: archive mode (preserves permissions/links)
-# -v: verbose (shows progress)
-# -z: compress for faster transfer
-# -P: show progress bar
-# --delete: removes files on destination that you deleted locally
-# --exclude: skip node_modules and .git to save time/space
+# -a: archive mode
+# -v: verbose (Changed to -v for better debugging output)
+# -z: compress
+# -P: progress
+# --delete: remove files on dest that don't exist on source
 rsync -avzP --delete \
     --exclude 'node_modules' \
     --exclude '.git' \

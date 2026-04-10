@@ -20,6 +20,8 @@ echo "================================================"
 echo "[BUILDING & STARTING SERVICES]"
 echo "================================================"
 
+
+
 docker compose up --build -d
 
 echo ""

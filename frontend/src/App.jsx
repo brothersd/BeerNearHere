@@ -5,6 +5,7 @@ import SearchPage from './pages/SearchPage.jsx'
 import ResultsPage from './pages/ResultsPage.jsx'
 import HistoryPage from './pages/HistoryPage.jsx'
 import AuthPage from './pages/AuthPage.jsx'
+import DeleteAccountPage from './pages/DeleteAccountPage.jsx'
 import Nav from './components/Nav.jsx'
 
 function ProtectedRoute({ children }) {
@@ -23,6 +24,7 @@ export default function App() {
         <Route path="/" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />
         <Route path="/results" element={<ProtectedRoute><ResultsPage /></ProtectedRoute>} />
         <Route path="/history" element={<ProtectedRoute><HistoryPage /></ProtectedRoute>} />
+        <Route path="/settings/delete-account" element={<ProtectedRoute><DeleteAccountPage /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>

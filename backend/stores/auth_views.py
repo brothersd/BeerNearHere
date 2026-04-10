@@ -116,3 +116,69 @@ class LogoutView(APIView):
             return Response({"message": "Logged out successfully."}, status=status.HTTP_200_OK)
         except TokenError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        old_password = request.data.get('old_password', '').strip()
+        new_password = request.data.get('new_password', '').strip()
+        confirm_password = request.data.get('confirm_password', '').strip()
+
+        if not old_password or not new_password or not confirm_password:
+            return Response(
+                {"error": "All fields are required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if new_password != confirm_password:
+            return Response(
+                {"error": "New passwords do not match."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if len(new_password) < 8:
+            return Response(
+                {"error": "New password must be at least 8 characters."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not user.check_password(old_password):
+            return Response(
+                {"error": "Old password is incorrect."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            user.set_password(new_password)
+            user.save()
+            logger.info(f"User changed password: {user.username}")
+            return Response({"message": "Password changed successfully."}, status=status.HTTP_200_OK)
+        except Exception as e:
+            logger.error(f"Password change failed for {user.username}: {str(e)}")
+            return Response(
+                {"error": "Failed to change password. Please try again."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class DeleteAccountView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request):
+        user = request.user
+        
+        try:
+            # Delete the user account
+            user.delete()
+            
+            logger.info(f"User deleted: {user.username}")
+            return Response({"message": "Account deleted successfully."}, status=status.HTTP_200_OK)
+        except Exception as e:
+            logger.error(f"Failed to delete user {user.username}: {str(e)}")
+            return Response(
+                {"error": "Failed to delete account. Please try again."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

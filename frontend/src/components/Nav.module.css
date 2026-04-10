@@ -7,6 +7,10 @@
   margin-bottom: 2.5rem;
   flex-wrap: wrap;
   gap: 1rem;
+  position: relative;
+  z-index: 1000;
+  /* Required to ensure the dropdown isn't clipped */
+  overflow: visible; 
 }
 
 .logo {
@@ -41,7 +45,7 @@
   font-family: 'Crimson Pro', serif;
   font-style: italic;
   font-size: 0.9rem;
-  color: rgba(245, 237, 214, 0.5);
+  color: rgba(245, 237, 214, 0.6);
   margin-top: 0.2rem;
 }
 
@@ -53,66 +57,122 @@
 
 .nav {
   display: flex;
-  gap: 2rem;
-  font-family: 'Crimson Pro', serif;
-  font-size: 1.1rem;
-  letter-spacing: 0.05em;
+  gap: 1.5rem;
 }
 
 .nav a {
-  color: rgba(245, 237, 214, 0.6);
   text-decoration: none;
-  transition: color 0.2s;
+  color: rgba(245, 237, 214, 0.7);
+  font-family: 'Crimson Pro', serif;
+  font-size: 1.1rem;
+  font-weight: 600;
   position: relative;
-  padding-bottom: 2px;
+  transition: color 0.3s ease;
+}
+
+.nav a:hover {
+  color: var(--amber-light);
 }
 
 .nav a::after {
   content: '';
   position: absolute;
-  bottom: -2px;
+  bottom: -4px;
   left: 0;
   width: 0;
-  height: 1px;
-  background: var(--amber);
-  transition: width 0.2s;
+  height: 2px;
+  background: var(--amber-light);
+  transition: width 0.3s ease;
 }
 
-.nav a:hover { color: var(--cream); }
-.nav a:hover::after { width: 100%; }
+.nav a:hover::after {
+  width: 100%;
+}
 
 .active {
   color: var(--amber-light) !important;
 }
-.active::after { width: 100% !important; }
 
+.active::after {
+  width: 100% !important;
+}
+
+/* Dropdown Container */
 .userInfo {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 1rem;
   border-left: 1px solid rgba(201, 123, 42, 0.2);
   padding-left: 1.5rem;
 }
 
-.username {
+.usernameDropdown {
+  background: none;
+  border: none;
+  color: rgba(245, 237, 214, 0.8);
   font-family: 'Crimson Pro', serif;
   font-size: 0.95rem;
-  color: rgba(245, 237, 214, 0.5);
-  font-style: italic;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+}
+
+.usernameDropdown:hover {
+  color: var(--amber-light);
+}
+
+.arrow {
+  font-size: 0.7rem;
+}
+
+/* The Menu Itself */
+.dropdownMenu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: #1a1a1a;
+  border: 1px solid rgba(201, 123, 42, 0.5);
+  border-radius: 4px;
+  min-width: 170px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem 0;
+  margin-top: 0.5rem;
+  z-index: 9999; /* Force it to the top */
+}
+
+.dropdownItem {
+  background: none;
+  border: none;
+  color: #f5edda;
+  padding: 0.8rem 1.2rem;
+  text-align: left;
+  font-family: 'Crimson Pro', serif;
+  font-size: 1rem;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.2s;
+}
+
+.dropdownItem:hover {
+  background-color: rgba(201, 123, 42, 0.2);
+  color: var(--amber-light);
+}
+
+.dropdownDivider {
+  height: 1px;
+  background-color: rgba(245, 237, 214, 0.1);
+  margin: 0.4rem 0;
 }
 
 .signOut {
-  background: none;
-  border: 1px solid rgba(201, 123, 42, 0.3);
-  border-radius: 3px;
-  color: rgba(245, 237, 214, 0.5);
-  font-family: 'Crimson Pro', serif;
-  font-size: 0.9rem;
-  padding: 0.3rem 0.8rem;
-  cursor: pointer;
-  transition: all 0.2s;
+  color: #ff6b6b;
 }
+
 .signOut:hover {
-  border-color: var(--amber);
-  color: var(--amber-light);
+  background-color: rgba(255, 107, 107, 0.1);
+  color: #ff8787;
 }

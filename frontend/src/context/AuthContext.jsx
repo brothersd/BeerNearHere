@@ -43,6 +43,24 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
+  const changePassword = useCallback(async (old_password, new_password, confirm_password) => {
+    setLoading(true)
+    setError('')
+    try {
+      await api.post('/auth/change-password/', { 
+        old_password, 
+        new_password, 
+        confirm_password 
+      })
+      return true
+    } catch (err) {
+      setError(err.response?.data?.error || 'Password change failed.')
+      return false
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
   const logout = useCallback(async () => {
     try {
       if (user?.refresh) {
@@ -57,7 +75,7 @@ export function AuthProvider({ children }) {
   }, [user])
 
   return (
-    <AuthContext.Provider value={{ user, loading, error, setError, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, error, setError, login, register, logout, changePassword }}>
       {children}
     </AuthContext.Provider>
   )

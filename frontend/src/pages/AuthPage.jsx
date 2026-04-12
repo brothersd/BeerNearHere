@@ -1,20 +1,40 @@
 // src/pages/AuthPage.jsx
 import { useState } from 'react'
+import { useNavigate } from 'react-router'
 import { useAuth } from '../context/AuthContext'
 import styles from './AuthPage.module.css'
 
 export default function AuthPage() {
-  const [mode, setMode] = useState('login')  // 'login' | 'register'
+  const [mode, setMode] = useState('login') // 'login' | 'register'
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const { login, register, loading, error, setError } = useAuth()
+  const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (mode === 'login') {
-      await login(username, password)
-    } else {
-      await register(username, password)
+    setError('') // Clear previous errors
+
+    try {
+      if (mode === 'login') {
+        const success = await login(username, password)
+        if (success) {
+          navigate('/') // Forward to search page on success
+        }
+      } else {
+        // Register the user
+        const registerSuccess = await register(username, password)
+        
+        if (registerSuccess) {
+          // AUTO-LOGIN after successful registration
+          const loginSuccess = await login(username, password)
+          if (loginSuccess) {
+            navigate('/') // Forward to search page
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Authentication process failed:", err)
     }
   }
 
@@ -38,25 +58,27 @@ export default function AuthPage() {
           <div className={styles.tabs}>
             <button
               className={`${styles.tab} ${mode === 'login' ? styles.activeTab : ''}`}
+              type="button"
               onClick={() => switchMode('login')}
             >
               Sign In
             </button>
             <button
               className={`${styles.tab} ${mode === 'register' ? styles.activeTab : ''}`}
+              type="button"
               onClick={() => switchMode('register')}
             >
               Sign Up
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className={styles.form}>
+          <form className={styles.form} onSubmit={handleSubmit}>
             <div className={styles.field}>
               <label className={styles.label}>Username</label>
               <input
                 className="input"
                 type="text"
-                placeholder="your_username"
+                placeholder="Enter username"
                 value={username}
                 onChange={e => setUsername(e.target.value)}
                 autoComplete="username"

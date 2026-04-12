@@ -24,19 +24,36 @@ export default function SearchPage() {
   const navigate = useNavigate()
 
   const handleSearch = async (e) => {
-    e.preventDefault()
-    if (!zipCode || !productName) return
-    setLoading(true)
-    setError('')
-    try {
-      const res = await searchProducts(zipCode, productName, packSize)
-      navigate('/results', { state: { results: res.data.results, zipCode, productName, packSize } })
-    } catch (err) {
-      setError('Failed to fetch results. Is the backend running?')
-    } finally {
-      setLoading(false)
-    }
+  e.preventDefault()
+  if (!zipCode || !productName) return
+  
+  setLoading(true)
+  setError('')
+
+  try {
+    // Ensure the keys match what handle_search extracts: 'zip' and 'q'
+    const res = await searchProducts(zipCode, productName, packSize)
+    
+    // Navigate to results page with the returned data
+    navigate('/results', { 
+      state: { 
+        results: res.data.results, 
+        zipCode, 
+        productName, 
+        packSize 
+      } 
+    })
+  } catch (err) {
+    console.error("Search failed:", err)
+    // Check if it's a 405 or a connection error
+    const message = err.response?.status === 405 
+      ? "Backend configuration error (405 Method Not Allowed)." 
+      : "Failed to fetch results. Is the backend running?";
+    setError(message)
+  } finally {
+    setLoading(false)
   }
+}
 
   return (
     <main className={styles.main}>

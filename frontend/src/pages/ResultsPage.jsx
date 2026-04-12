@@ -1,5 +1,7 @@
 import { useLocation, useNavigate } from 'react-router'
+import { useState } from 'react'
 import styles from './ResultsPage.module.css'
+import ReviewModal from '../components/ReviewModal'
 
 const STORE_COLORS = {
   Walmart: '#0071CE',
@@ -17,6 +19,8 @@ function getStoreColor(storeName) {
 export default function ResultsPage() {
   const { state } = useLocation()
   const navigate = useNavigate()
+  const [showReviewModal, setShowReviewModal] = useState(false)
+  const [selectedProductId, setSelectedProductId] = useState(null)
 
   if (!state?.results) {
     navigate('/')
@@ -32,8 +36,32 @@ export default function ResultsPage() {
     `${results.length} products found`,
   ].filter(Boolean).join(' · ')
 
+  const handleOpenReviewModal = (productId) => {
+    setSelectedProductId(productId)
+    setShowReviewModal(true)
+  }
+
+  const handleCloseReviewModal = () => {
+    setShowReviewModal(false)
+    setSelectedProductId(null)
+  }
+
+  const handleReviewSubmit = () => {
+    // Refresh the page to show updated reviews
+    window.location.reload()
+  }
+
   return (
     <main className={styles.main}>
+      {showReviewModal && (
+        <ReviewModal
+          productId={selectedProductId}
+          isOpen={showReviewModal}
+          onClose={handleCloseReviewModal}
+          onReviewSubmit={handleReviewSubmit}
+        />
+      )}
+      
       <div className={styles.header}>
         <div>
           <p className={styles.breadcrumb}>
@@ -86,6 +114,12 @@ export default function ResultsPage() {
                   View Product →
                 </a>
               )}
+              <button
+                className={`btn ${styles.reviewButton}`}
+                onClick={() => handleOpenReviewModal(product.id)}
+              >
+                Review This Beer
+              </button>
               {i === 0 && <div className={styles.cheapestBadge}>🏆 Cheapest</div>}
             </div>
           ))}

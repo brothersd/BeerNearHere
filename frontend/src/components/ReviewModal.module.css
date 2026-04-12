@@ -1,0 +1,144 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background: linear-gradient(135deg, var(--mahogany-mid), var(--stout));
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.reviewForm {
+  padding: 1.5rem;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modalHeader h3 {
+  margin: 0;
+  color: var(--cream);
+  font-size: 1.25rem;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: rgba(245, 237, 214, 0.6);
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeButton:hover {
+  color: var(--cream);
+}
+
+.reviewForm {
+  padding: 1.5rem;
+}
+
+.label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--cream);
+}
+
+.starsContainer {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.star {
+  font-size: 1.75rem;
+  cursor: pointer;
+  color: #666;
+  transition: color 0.2s;
+}
+
+.star.filled {
+  color: var(--amber);
+}
+
+.ratingText {
+  margin-top: 0.25rem;
+  color: var(--cream);
+  font-size: 0.9rem;
+}
+
+.textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  background: var(--input-bg);
+  color: var(--cream);
+  font-family: inherit;
+  resize: vertical;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--amber);
+}
+
+.error {
+  color: #ff6b6b;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: rgba(255, 107, 107, 0.1);
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  justify-content: flex-end;
+}
+
+.cancelButton {
+  background-color: var(--secondary-button-bg);
+  border: 1px solid var(--border-color);
+}
+
+@media (max-width: 600px) {
+  .modalContent {
+    width: 95%;
+    margin: 1rem;
+  }
+  
+  .reviewForm {
+    padding: 1rem;
+  }
+  .buttonGroup {
+    flex-direction: column;
+  }
+}
+

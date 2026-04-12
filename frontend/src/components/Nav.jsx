@@ -46,10 +46,31 @@ export default function Nav() {
 
       <div className={styles.right}>
         <nav className={styles.nav}>
-          <NavLink to="/" end className={({ isActive }) => isActive ? styles.active : ''}>Search</NavLink>
-          <NavLink to="/history" className={({ isActive }) => isActive ? styles.active : ''}>History</NavLink>
+          <NavLink 
+            to="/" 
+            end 
+            className={({ isActive }) => isActive ? styles.active : ''}
+          >
+            Search
+          </NavLink>
+          
+          {/* New Reviews Link */}
+          <NavLink 
+            to="/reviews" 
+            className={({ isActive }) => isActive ? styles.active : ''}
+          >
+            Reviews
+          </NavLink>
+
+          <NavLink 
+            to="/history" 
+            className={({ isActive }) => isActive ? styles.active : ''}
+          >
+            History
+          </NavLink>
         </nav>
-        {user && (
+
+        {user ? (
           <div className={styles.userInfo} ref={dropdownRef}>
             <button className={styles.usernameDropdown} onClick={toggleDropdown}>
               👤 {user.username} <span className={styles.arrow}>{isDropdownOpen ? '▲' : '▼'}</span>
@@ -69,6 +90,8 @@ export default function Nav() {
               </div>
             )}
           </div>
+        ) : (
+          <NavLink to="/auth" className="btn">Sign In</NavLink>
         )}
       </div>
 

@@ -148,6 +148,23 @@
   letter-spacing: 0.05em;
 }
 
+.reviewButton {
+  margin-top: 1rem;
+  width: 100%;
+  background-color: rgba(201, 123, 42, 0.1);
+  border: 1px solid var(--amber);
+  color: var(--amber-light);
+  font-weight: 600;
+  padding: 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.reviewButton:hover {
+  background-color: rgba(201, 123, 42, 0.2);
+}
+
 .empty {
   text-align: center;
   padding: 3rem;

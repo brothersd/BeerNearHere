@@ -1,13 +1,25 @@
-// src/context/AuthContext.jsx
-import { createContext, useContext, useState, useCallback } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect } from 'react'
 import api from '../api/client'
 
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null)      // { username, access, refresh }
-  const [loading, setLoading] = useState(false)
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true) // Start as loading to check storage
   const [error, setError] = useState('')
+
+  // Check for existing session on startup
+  useEffect(() => {
+    const access = localStorage.getItem('access_token')
+    const refresh = localStorage.getItem('refresh_token')
+    const username = localStorage.getItem('username') // Added to persist name
+
+    if (access && username) {
+      setUser({ username, access, refresh })
+      api.defaults.headers.common['Authorization'] = `Bearer ${access}`
+    }
+    setLoading(false)
+  }, [])
 
   const login = useCallback(async (username, password) => {
     setLoading(true)
@@ -15,7 +27,14 @@ export function AuthProvider({ children }) {
     try {
       const res = await api.post('/auth/login/', { username, password })
       const data = res.data
+      
       setUser({ username: data.username, access: data.access, refresh: data.refresh })
+      
+      // Persist to storage
+      localStorage.setItem('access_token', data.access)
+      localStorage.setItem('refresh_token', data.refresh)
+      localStorage.setItem('username', data.username)
+      
       api.defaults.headers.common['Authorization'] = `Bearer ${data.access}`
       return true
     } catch (err) {
@@ -32,29 +51,17 @@ export function AuthProvider({ children }) {
     try {
       const res = await api.post('/auth/register/', { username, password })
       const data = res.data
+      
       setUser({ username: data.username, access: data.access, refresh: data.refresh })
+      
+      localStorage.setItem('access_token', data.access)
+      localStorage.setItem('refresh_token', data.refresh)
+      localStorage.setItem('username', data.username)
+      
       api.defaults.headers.common['Authorization'] = `Bearer ${data.access}`
       return true
     } catch (err) {
       setError(err.response?.data?.error || 'Registration failed.')
-      return false
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  const changePassword = useCallback(async (old_password, new_password, confirm_password) => {
-    setLoading(true)
-    setError('')
-    try {
-      await api.post('/auth/change-password/', { 
-        old_password, 
-        new_password, 
-        confirm_password 
-      })
-      return true
-    } catch (err) {
-      setError(err.response?.data?.error || 'Password change failed.')
       return false
     } finally {
       setLoading(false)
@@ -67,20 +74,21 @@ export function AuthProvider({ children }) {
         await api.post('/auth/logout/', { refresh: user.refresh })
       }
     } catch (_) {
-      // Logout even if API call fails
+      // Ignore fail
     } finally {
       setUser(null)
       delete api.defaults.headers.common['Authorization']
+      localStorage.removeItem('access_token')
+      localStorage.removeItem('refresh_token')
+      localStorage.removeItem('username')
     }
   }, [user])
 
   return (
-    <AuthContext.Provider value={{ user, loading, error, setError, login, register, logout, changePassword }}>
-      {children}
+    <AuthContext.Provider value={{ user, loading, error, setError, login, register, logout }}>
+      {!loading && children}
     </AuthContext.Provider>
   )
 }
 
-export function useAuth() {
-  return useContext(AuthContext)
-}
+export const useAuth = () => useContext(AuthContext)
